@@ -62,6 +62,8 @@ mkYarnPackage {
   buildPhase = ''
     # Yarn writes cache directories etc to $HOME.
     export HOME=$PWD/yarn_home
+    substituteInPlace package.json \
+      --replace '$(git rev-parse --short HEAD)' "${src.rev}"
 
     ln -sf $PWD/node_modules $PWD/deps/lemmy-ui/
     echo 'export const VERSION = "${version}";' > $PWD/deps/lemmy-ui/src/shared/version.ts
@@ -79,6 +81,7 @@ mkYarnPackage {
 
   passthru.updateScript = ./update.py;
   passthru.tests.lemmy-ui = nixosTests.lemmy;
+  passthru.commit_sha = src.rev;
 
   meta = with lib; {
     description = "Building a federated alternative to reddit in rust";
