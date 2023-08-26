@@ -9,6 +9,8 @@
 , nixosTests
 , vips
 , nodePackages
+, stdenvNoCC
+, writeShellScript
 }:
 
 let
@@ -49,12 +51,12 @@ mkYarnPackage {
 
   extraBuildInputs = [ libsass ];
 
-  packageJSON = pkgs.stdenvNoCC.mkDerivation {
+  packageJSON = stdenvNoCC.mkDerivation {
   src = ./package.json;
   name = "package.json";
   preferLocalBuild = true;
   allowSubstitutes = false;
-  builder = pkgs.writeShellScript "substitute" ''
+  builder = writeShellScript "substitute" ''
     source $stdenv/setup
     substitute "$src" "$out" --replace '$(git rev-parse --short HEAD)' "${src.rev}"
 
