@@ -49,7 +49,18 @@ mkYarnPackage {
 
   extraBuildInputs = [ libsass ];
 
-  packageJSON = ./package.json;
+  packageJSON = pkgs.stdenvNoCC.mkDerivation {
+  src = ./package.json;
+  name = "package.json";
+  preferLocalBuild = true;
+  allowSubstitutes = false;
+  builder = pkgs.writeShellScript "substitute" ''
+    source $stdenv/setup
+    substitute "$src" "$out" --replace '$(git rev-parse --short HEAD)' "${src.rev}"
+
+    eval "$postInstall"
+  '';
+};
   offlineCache = fetchYarnDeps {
     yarnLock = src + "/yarn.lock";
     hash = pinData.uiYarnDepsHash;
@@ -62,8 +73,6 @@ mkYarnPackage {
   buildPhase = ''
     # Yarn writes cache directories etc to $HOME.
     export HOME=$PWD/yarn_home
-    substituteInPlace package.json \
-      --replace '$(git rev-parse --short HEAD)' "${src.rev}"
 
     ln -sf $PWD/node_modules $PWD/deps/lemmy-ui/
     echo 'export const VERSION = "${version}";' > $PWD/deps/lemmy-ui/src/shared/version.ts
