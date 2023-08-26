@@ -62,7 +62,7 @@ mkYarnPackage {
   buildPhase = ''
     # Yarn writes cache directories etc to $HOME.
     export HOME=$PWD/yarn_home
-    substituteInPlace package.json \
+    substituteInPlace $PWD/package.json \
       --replace '$(git rev-parse --short HEAD)' "${src.rev}"
 
     ln -sf $PWD/node_modules $PWD/deps/lemmy-ui/
